@@ -1,0 +1,9 @@
+[project]
+name = "Lexy"
+version = "1.0.0"
+description = "A dictionary server"
+dependencies = []
+requires-python = ">= 3.13"
+
+[project.scripts]
+lexy = "lexy.main:main"
