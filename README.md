@@ -1,1 +1,1 @@
-# Lexi/Lexy
+# Lexical

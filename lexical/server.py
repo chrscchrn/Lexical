@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import List, Tuple
 from .wordnet.wordnet import WordNetHandler
 log = logging.getLogger(__name__)
 
@@ -43,6 +44,19 @@ class Server:
     def consumer(self, word):
         log.info(f"Received {word}")
         clean_words = ' '.join(word.strip().split())
+        responses: List[List[Tuple[str, str]]] = [self.wordnet.lookup(cw) for cw in clean_words.split(' ')]
 
+        out = f"Definition(s) for word: {word}\n"
 
+        for res in responses:
+            log.info(f"res: {res}")
+            for base, _def in res:
+                log.info(base)
+                out += f"base word: {base} - {_def}\n"
+
+        self.write(out.encode("utf-8"))
+
+    def write(self, data):
+        self.stdout.write(data)
+        self.stdout.flush()
 

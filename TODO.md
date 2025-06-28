@@ -1,13 +1,13 @@
-# TODO:
+# Lexical
     
 ## Problem Statement
 As a user I should be able to get the definition of a word by command line or lsp by 'hovering' over its name.
 
 Command Line:
 ```
-define word1 word2 word3
+lexical word1 word2 word3
 ```
-> This uses the arguements of the command to get the definitions.
+> Use command line arguements to get the definition of a word.
 
 LSP (Running proram for speed):
 ```
@@ -16,15 +16,30 @@ function delegate()
 ```
 by running:
 ```
-define --stdin
+lexical --stdin
 ```
-as a LSP server.
-> This uses the stdin of the command to read the input word(s) and stdout to output the definitions.
+as a server using stdio.
+> This uses the stdin of the command to read the input word(s) and stdout to output the definitions. 
+
+### Extensions
+- Create a neovim plugin that installs and runs lexical via lua without LSP
+- Create a VS Code extension that installs and runs lexical via lua without LSP
 
 ## System Design
-- how should I load data and store it in memory? Should I store it completely in memory?
-    - index.sense
-    - data.pos
-    - index.pos
+- performance:
 
+- resources:
+    - how should I load data and store it in memory? Should I store it completely in memory?
+        - index.sense
+        - data.pos
+        - index.pos
+
+## Future Plans
+- restructure the wordnet data to be more efficient for searching
+    - local db: postgres, sqlite
+- floating window for multiple definitions
+    - telescope.nvim
+- Networking
+    - TCP
+    - websocket
 

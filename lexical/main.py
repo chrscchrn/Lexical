@@ -10,7 +10,8 @@ logger = logging.getLogger(__name__)
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def add_arguments(parser) -> None:
-    parser.description = "Lexy: A dictionary server run on wordnet"
+    parser.description = "Lexical: An offline dictionary server"
+
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument("word", nargs="?", help="The word to look up")
