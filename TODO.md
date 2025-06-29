@@ -41,7 +41,7 @@ response to one word = {
     "synset_count": 1, # number of words
     "type_count": "number of types",
     "body": {
-        "noun": [
+        "n": [
             {
                 "base": base_word,
                 "base_type": "n",
