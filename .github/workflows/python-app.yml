@@ -36,9 +36,10 @@ jobs:
 
     - name: Check for expected data files
       run: |
-        DATA_FILES=$(find unpacked -path "./lexical/data/*")
-        if [ -z "$DATA_FILES" ]; then
-          echo "Data files missing in ./unpacked/lexical/data/"
+        DATA_FILES=$(find unpacked -path "*/lexical/data/*")
+        echo "$DATA_FILES"
+        if [ -Z "$DATA_FILES" ]; then
+          echo "Data files missing in lexical/data/"
           exit 1
         fi
 
