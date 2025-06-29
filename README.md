@@ -1,6 +1,6 @@
 # Lexical (in progress)
 
-Lexical is an offline dictionary server and command-line tool that provides fast word definitions using WordNet data. It can be used as a CLI tool or as a background server.
+Lexical is an offline dictionary server and command-line tool that provides fast word definitions using WordNet data.
 
 ## Features
 - **Offline Dictionary**: Uses local WordNet data for word lookups.
