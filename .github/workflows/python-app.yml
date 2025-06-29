@@ -48,13 +48,8 @@ jobs:
     - name: Install package from unpacked source
       run: pip install ./unpacked/*
 
-    # - name: Run CLI command
-    #   run: |
-    #     lexical hello
-    #     lexical world
-
-    # - name: Run tests with pytest
-    #   run: pytest tests/
+    - name: Run tests with pytest
+      run: pytest
 
   # publish:
   #   runs-on: ubuntu-latest
