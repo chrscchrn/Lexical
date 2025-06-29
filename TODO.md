@@ -35,8 +35,8 @@ as a server using stdio.
         - index.pos
 
 ## Future Plans
-- restructure the wordnet data to be more efficient for searching
-    - local db: postgres, sqlite
+- restructure the wordnet data to embedded DB
+    - SQLite, DuckDB, RocksDB
 - floating window for multiple definitions
     - telescope.nvim
 - Networking
