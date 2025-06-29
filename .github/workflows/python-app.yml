@@ -19,6 +19,9 @@ jobs:
       with:
         python-version: "3.13.3"
 
+    - name: Run tests with pytest
+      run: pytest
+
     - name: Upgrade build tools
       run: python -m pip install --upgrade pip build pytest
 
@@ -47,9 +50,6 @@ jobs:
 
     - name: Install package from unpacked source
       run: pip install ./unpacked/*
-
-    - name: Run tests with pytest
-      run: pytest
 
   # publish:
   #   runs-on: ubuntu-latest
