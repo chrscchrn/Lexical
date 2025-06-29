@@ -1,5 +1,5 @@
 # Lexical
-    
+
 ## Problem Statement
 As a user I should be able to get the definition of a word by command line or lsp by 'hovering' over its name.
 
@@ -19,7 +19,7 @@ by running:
 lexical --stdin
 ```
 as a server using stdio.
-> This uses the stdin of the command to read the input word(s) and stdout to output the definitions. 
+> This uses the stdin of the command to read the input word(s) and stdout to output the definitions.
 
 ### Extensions
 - Create a neovim plugin that installs and runs lexical via lua without LSP
@@ -35,11 +35,32 @@ as a server using stdio.
     - websocket
 - Verbosity (too many definitions and examples)
 
-## words
-### working
-- nouns are working
-- adverbs are working
+## wordnet protocol
+response to one word = {
+    "word": "word",
+    "synset_count": 1, # number of words
+    "type_count": "number of types",
+    "body": {
+        "noun": [
+            {
+                "base": base_word,
+                "base_type": "n",
+                "content": [
+                    {
+                        "definition": "a meaning of a word",
+                        "examples": ["example1", ...]
+                    }
+                ]
+            },
+        ],
+        "verb": [...]
+    },
+}
 
-### not working
-- verbs are not working
-- adjectives are not working
+go thru the indexes and save like this:
+indexes = {
+    "n": [],
+    "v": [],
+    "a": [],
+    "r": [],
+}
