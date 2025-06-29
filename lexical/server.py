@@ -32,8 +32,7 @@ class Server:
     def __init__(self, stdin, stdout, root_dir):
         self.stdin = stdin
         self.stdout = stdout
-        self.root_dir = root_dir
-        self.wordnet_path = os.path.join(self.root_dir, "data")
+        self.wordnet_path = os.path.join(root_dir, "data")
         self.startup_message = False
         self.wordnet = WordNetHandler(self.wordnet_path)
         self.speech_class = {
@@ -91,7 +90,6 @@ class Server:
             if not response["synset_count"]:
                 self.write(f"No definition(s) found for word: {word}.\n")
             cur_word_class = ""
-            # msg = f"{self._header(word)}"
             msg = ""
             counter = 1
             for ss_type, type_obj in response["body"].items():
