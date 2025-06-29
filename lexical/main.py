@@ -10,12 +10,11 @@ logger = logging.getLogger(__name__)
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def add_arguments(parser) -> None:
-    parser.description = "Lexical: An offline dictionary server"
-
-
+    parser.description = "Lexical: An offline dictionary server and command line tool"
+    parser.add_argument("-v", "--verbose", action="store_false", help="Enable verbose definitions and examples")
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("word", nargs="?", help="The word to look up")
-    group.add_argument("--stdin", action="store_true", help="Run inside an lsp instead of the command line")
+    group.add_argument("--define", nargs="+", metavar="WORD", help="Define one or more words")
+    group.add_argument("--stdin", action="store_true", help="Run as an IO server")
 
 def _binary_stdio():
     stdin, stdout = sys.stdin.buffer, sys.stdout.buffer
@@ -29,9 +28,12 @@ def main() -> None:
     if args.stdin:
         stdin, stdout = _binary_stdio()
         start_io_server(stdin, stdout, ROOT_DIR)
+    elif args.define:
+        # args.define is a list of words to define
+        print(f"Words to define: {args.define}")
+        # TODO: Add your word definition logic here
     else:
-        pass
-        # CLI
+        parser.print_help()
 
 if __name__ == "__main__":
     main()

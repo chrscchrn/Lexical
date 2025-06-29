@@ -25,15 +25,6 @@ as a server using stdio.
 - Create a neovim plugin that installs and runs lexical via lua without LSP
 - Create a VS Code extension that installs and runs lexical via lua without LSP
 
-## System Design
-- performance:
-
-- resources:
-    - how should I load data and store it in memory? Should I store it completely in memory?
-        - index.sense
-        - data.pos
-        - index.pos
-
 ## Future Plans
 - restructure the wordnet data to embedded DB
     - SQLite, DuckDB, RocksDB
@@ -42,4 +33,5 @@ as a server using stdio.
 - Networking
     - TCP
     - websocket
+- Verbosity (too many definitions and examples)
 

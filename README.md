@@ -1,4 +1,4 @@
-# Lexical
+# Lexical (in progress)
 
 Lexical is an offline dictionary server and command-line tool that provides fast word definitions using WordNet data. It can be used as a CLI tool or as a background server (suitable for integration with editors like Neovim or VS Code).
 
