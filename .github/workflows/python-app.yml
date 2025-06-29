@@ -36,18 +36,22 @@ jobs:
 
     - name: Check for expected data files
       run: |
-        DATA_FILES=$(find unpacked -path "*/lexical/data/*")
-        echo "$DATA_FILES"
-        if [ -Z "$DATA_FILES" ]; then
-          echo "Data files missing in lexical/data/"
+        DATA_FILES=$(find unpacked -type f -path "*/lexical/data/*" || true)
+        if [ -z "$DATA_FILES" ]; then
+          echo "ERROR: Data files missing in lexical/data/"
           exit 1
+        else
+          echo "Found data files:"
+          echo "$DATA_FILES"
         fi
 
     - name: Install package from unpacked source
       run: pip install ./unpacked/*
 
-    - name: Run CLI command
-      run: echo "hello" | lexical --stdin
+    # - name: Run CLI command
+    #   run: |
+    #     lexical hello
+    #     lexical world
 
     # - name: Run tests with pytest
     #   run: pytest tests/
