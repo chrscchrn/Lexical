@@ -1,15 +1,15 @@
 import os
 import logging
 import re
-from typing import Any, List, Tuple
+from typing import List, Tuple
 
 log = logging.getLogger(__name__)
 
 
 class WordNetHandler:
-    """The WordNetHandler class loads wordnet database files into memory and provides methods for looking up words.
+    """The WordNetHandler class loads wordnet database files into memory
+        and provides methods for looking up words.
     methods:
-        lookup
         lookup_v2
     """
 
@@ -66,7 +66,6 @@ class WordNetHandler:
             ("a", "comparative & superlative", r"(.+?)iest$", r"\1y"),
             ("a", "comparative & superlative", r"(.+?)er$", r"\1"),
             ("a", "comparative & superlative", r"(.+?)est$", r"\1"),
-            # happier? TODO: need to expand to a complete ruleset
         ]
 
         # Load wordnet database
@@ -74,51 +73,61 @@ class WordNetHandler:
         exc_files = ["adj.exc", "adv.exc", "noun.exc", "verb.exc"]
         path_exc = [os.path.join(wordnet_path, f) for f in exc_files]
         for path in path_exc:
-            with open(path, "r") as f:
-                log.info(f"Loading {path}")
-                while True:
-                    line = f.readline()
-                    if line == "":
-                        break
-                    res = line.strip().split()
-                    pos = path.split("/")[-1].split(".")[0]
-                    self._exc[self._pos_to_ss_type[pos]][res[0]] = res[1:]
+            try:
+                with open(path, "r") as f:
+                    log.info(f"Loading {path}")
+                    while True:
+                        line = f.readline()
+                        if line == "":
+                            break
+                        res = line.strip().split()
+                        pos = path.split("/")[-1].split(".")[0]
+                        self._exc[self._pos_to_ss_type[pos]][res[0]] = res[1:]
+            except Exception as e:
+                log.error(f"Failed to load {path}: {e}")
 
         # indexes[class][word] = synsets
         index_files = ["index.adj", "index.adv", "index.noun", "index.verb"]
         path_index = [os.path.join(self.wordnet_path, f) for f in index_files]
         for path in path_index:
-            with open(path, "r") as f:
-                log.info(f"Loading {path}")
-                while True:
-                    line = f.readline()
-                    if line == "":
-                        break
-                    elif line[:2] == "  ":
-                        continue
-                    res = line.strip().split()
-                    pos = path.split("/")[-1].split(".")[-1]
-                    syn_count = int(res[2])
-                    self._index[self._pos_to_ss_type[pos]][res[0]] = res[
-                        len(res) - syn_count :
-                    ]
+            try:
+                with open(path, "r") as f:
+                    log.info(f"Loading {path}")
+                    while True:
+                        line = f.readline()
+                        if line == "":
+                            break
+                        elif line[:2] == "  ":
+                            continue
+                        res = line.strip().split()
+                        pos = path.split("/")[-1].split(".")[-1]
+                        syn_count = int(res[2])
+                        data = res[len(res) - syn_count :]
+                        self._index[self._pos_to_ss_type[pos]][res[0]] = data
+
+            except Exception as e:
+                log.error(f"Failed to load {path}: {e}")
 
         # data[class][synset] = definition and examples
         data_files = ["data.adj", "data.adv", "data.noun", "data.verb"]
         path_data = [os.path.join(self.wordnet_path, f) for f in data_files]
         for path in path_data:
-            with open(path, "r") as f:
-                log.info(f"Loading {path}")
-                while True:
-                    line = f.readline()
-                    if line == "":
-                        break
-                    elif line[:2] == "  ":
-                        continue
-                    res_str = line.strip()
-                    word = res_str.split()[0]
-                    pos = path.split("/")[-1].split(".")[-1]
-                    self._data[self._pos_to_ss_type[pos]][word] = res_str.split("|")[1]
+            try:
+                with open(path, "r") as f:
+                    log.info(f"Loading {path}")
+                    while True:
+                        line = f.readline()
+                        if line == "":
+                            break
+                        elif line[:2] == "  ":
+                            continue
+                        res_str = line.strip()
+                        word = res_str.split()[0]
+                        pos = path.split("/")[-1].split(".")[-1]
+                        data = res_str.split("|")[1]
+                        self._data[self._pos_to_ss_type[pos]][word] = data
+            except Exception as e:
+                log.error(f"Failed to load {path}: {e}")
 
     def lookup_v2(self, word: str):
         """Lookup a word in wordnet and return a response with the word class,
@@ -136,7 +145,7 @@ class WordNetHandler:
                 "a": [],
                 "r": [],
                 "v": [],
-                "s": [],
+                "s": [],  # TODO: is s used?
             },
         }
 
@@ -155,6 +164,7 @@ class WordNetHandler:
                     for base_word in obj[word]:
                         base_words_and_types.append((base_word, ss_type))
             log.info(f"Base Words and SS Types: {base_words_and_types}")
+
             # go on looking for the synsets
             for base_word, ss_type in base_words_and_types:
                 if base_word not in self._index[ss_type]:
@@ -185,7 +195,7 @@ class WordNetHandler:
                 "examples": examples,
             }
             response["body"][ss_type].append(data)
-        log.info(response)
+        log.info(f"End lookup_v2, response: {response}")
         return response
 
     def _word_exists_in(self, word: str, data: dict) -> bool:
@@ -197,7 +207,7 @@ class WordNetHandler:
         """
         exists = False
         for ss_type, obj in data.items():
-            log.info("checking if {word} exists in {ss_type} dict")
+            log.info(f"checking if {word} exists in {ss_type} dict")
             if word in obj:
                 log.info(f"{word} exists in {ss_type} dict")
                 exists = True

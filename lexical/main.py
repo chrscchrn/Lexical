@@ -26,7 +26,11 @@ def add_arguments(parser) -> None:
     group.add_argument(
         "--define", nargs="+", metavar="WORD", help="Define one or more words"
     )
-    group.add_argument("--stdin", action="store_true", help="Run as an IO server")
+    group.add_argument(
+        "--stdin",
+        action="store_true",
+        help="Run as an IO server",
+    )
 
 
 def _binary_stdio():
