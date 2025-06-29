@@ -2,69 +2,70 @@ import os
 import logging
 import re
 from typing import Any, List, Tuple
+
 log = logging.getLogger(__name__)
 
+
 class WordNetHandler:
-    '''The WordNetHandler class loads wordnet database files into memory and provides methods for looking up words.
+    """The WordNetHandler class loads wordnet database files into memory and provides methods for looking up words.
     methods:
         lookup
         lookup_v2
-    '''
+    """
 
     def __init__(self, wordnet_path):
         self.wordnet_path = wordnet_path
         self._exc = {
-            'a': {},
-            'n': {},
-            'v': {},
-            'r': {},
-            's': {},
+            "a": {},
+            "n": {},
+            "v": {},
+            "r": {},
+            "s": {},
         }
         self._index = {
-            'a': {},
-            'n': {},
-            'v': {},
-            'r': {},
-            's': {},
+            "a": {},
+            "n": {},
+            "v": {},
+            "r": {},
+            "s": {},
         }
         self._data = {
-            'a': {},
-            'n': {},
-            'v': {},
-            'r': {},
-            's': {},
+            "a": {},
+            "n": {},
+            "v": {},
+            "r": {},
+            "s": {},
         }
         self._char_to_pos = {
-            'a': 'adj',
-            'n': 'noun',
-            'v': 'verb',
-            'r': 'adv',
-            's': 'adj_s'
+            "a": "adj",
+            "n": "noun",
+            "v": "verb",
+            "r": "adv",
+            "s": "adj",
         }
         self._pos_to_ss_type = {
-            'adj': 'a',
-            'adv': 'r',
-            'noun': 'n',
-            'verb': 'v',
-            'adj_s': 's',
+            "adj": "a",
+            "adv": "r",
+            "noun": "n",
+            "verb": "v",
         }
 
         self.morph_ruleset = [
-            ('n', 'regular plurals', r'(.+?)ies$', r'\1y'),               # babies → baby, flies → fly
-            ('n', 'regular plurals', r'(.+?)([sxz]|[cs]h)es$', r'\1\2'),  # boxes → box, wishes → wish
-            ('n', 'regular plurals', r'(.+?)s$', r'\1'),                  # cats → cat
-            ('v', 'third person', r'(.+?)ies$', r'\1y'),                  # tries → try
-            ('v', 'third person', r'(.+?)([sxz]|[cs]h)es$', r'\1\2'),     # passes → pass
-            ('v', 'third person', r'(.+?)s$', r'\1'),                     # walks → walk
-            ('v', 'past tense', r'(.+?)ied$', r'\1y'),                    # tried → try
-            ('v', 'past tense', r'(.+?)ed$', r'\1'),                      # played → play
-            ('v', 'past tense', r'(.+?)([b-df-hj-np-tv-z])\2ed$', r'\1\2'),  # stopped → stop
-            ('v', 'present participle', r'(.+?)ying$', r'\1ie'),          # lying → lie
-            ('v', 'present participle', r'(.+?)ing$', r'\1'),             # running → run
-            ('v', 'present participle', r'(.+?)([b-df-hj-np-tv-z])\2ing$', r'\1\2'),  # stopping → stop
-            ('a', 'comparative & superlative', r'(.+?)iest$', r'\1y'),    # happiest → happy
-            ('a', 'comparative & superlative', r'(.+?)er$', r'\1'),       # bigger → big
-            ('a', 'comparative & superlative', r'(.+?)est$', r'\1'),      # biggest → big
+            ("n", "regular plurals", r"(.+?)ies$", r"\1y"),
+            ("n", "regular plurals", r"(.+?)([sxz]|[cs]h)es$", r"\1\2"),
+            ("n", "regular plurals", r"(.+?)s$", r"\1"),
+            ("v", "third person", r"(.+?)ies$", r"\1y"),
+            ("v", "third person", r"(.+?)([sxz]|[cs]h)es$", r"\1\2"),
+            ("v", "third person", r"(.+?)s$", r"\1"),
+            ("v", "past tense", r"(.+?)ied$", r"\1y"),
+            ("v", "past tense", r"(.+?)ed$", r"\1"),
+            ("v", "past tense", r"(.+?)([b-df-hj-np-tv-z])\2ed$", r"\1\2"),
+            ("v", "present participle", r"(.+?)ying$", r"\1ie"),
+            ("v", "present participle", r"(.+?)ing$", r"\1"),
+            ("v", "present participle", r"(.+?)([b-df-hj-np-tv-z])\2ing$", r"\1\2"),
+            ("a", "comparative & superlative", r"(.+?)iest$", r"\1y"),
+            ("a", "comparative & superlative", r"(.+?)er$", r"\1"),
+            ("a", "comparative & superlative", r"(.+?)est$", r"\1"),
             # happier? TODO: need to expand to a complete ruleset
         ]
 
@@ -98,7 +99,9 @@ class WordNetHandler:
                     res = line.strip().split()
                     pos = path.split("/")[-1].split(".")[-1]
                     syn_count = int(res[2])
-                    self._index[self._pos_to_ss_type[pos]][res[0]] = res[len(res)-syn_count:]
+                    self._index[self._pos_to_ss_type[pos]][res[0]] = res[
+                        len(res) - syn_count :
+                    ]
 
         # data[class][synset] = definition and examples
         data_files = ["data.adj", "data.adv", "data.noun", "data.verb"]
@@ -118,29 +121,32 @@ class WordNetHandler:
                     self._data[self._pos_to_ss_type[pos]][word] = res_str.split("|")[1]
 
     def lookup_v2(self, word: str):
-        '''Lookup a word in wordnet and return a response with the word class, definitions and examples.
+        """Lookup a word in wordnet and return a response with the word class,
+            definitions and examples.
         args:
         - word: string
         returns:
         - dict
-        '''
+        """
         response = {
             "word": word,
             "synset_count": 0,
             "body": {
-                'n': [],
-                'a': [],
-                'r': [],
-                'v': [],
-                's': [],
-            }
+                "n": [],
+                "a": [],
+                "r": [],
+                "v": [],
+                "s": [],
+            },
         }
+
+        log.info(f"Wordnet recieved word: {word}")
 
         # Getting base words then synsets
         synsets_and_ss_types: List[Tuple[str, str]] = []
-        if not self._word_exists_in_index(word):
+        if not self._word_exists_in(word, self._index):
             base_words_and_types: List[Tuple[str, str]] = []
-            if not self._word_exists_in_exceptions(word):
+            if not self._word_exists_in(word, self._exc):
                 base_words_and_types.extend(self._lemmatize(word))
             else:
                 for ss_type, obj in self._exc.items():
@@ -167,51 +173,44 @@ class WordNetHandler:
                     synsets_and_ss_types.append((synset, ss_type))
 
         log.info(f"Synsets and SS Types: {synsets_and_ss_types}")
-
         response["synset_count"] = len(synsets_and_ss_types)
 
         for synset, ss_type in synsets_and_ss_types:
-            defs_and_egs = self._data[ss_type][synset].split(';')
+            defs_and_egs = self._data[ss_type][synset].split(";")
+            examples = []
+            for i in range(1, len(defs_and_egs)):
+                examples.append(defs_and_egs[i].strip())
             data = {
                 "definition": defs_and_egs[0].strip(),
-                "examples": [defs_and_egs[i].strip() for i in range(1, len(defs_and_egs))],
+                "examples": examples,
             }
             response["body"][ss_type].append(data)
         log.info(response)
         return response
 
-
-    def _word_exists_in_index(self, word: str) -> bool:
-        '''Checks if the word exists in the index.
+    def _word_exists_in(self, word: str, data: dict) -> bool:
+        """Checks if the word exists in the exceptions.
         args:
         - word: string
         returns:
         - bool
-        '''
+        """
         exists = False
-        for _, synset_dict in self._index.items():
-            if word in synset_dict:
+        for ss_type, obj in data.items():
+            log.info("checking if {word} exists in {ss_type} dict")
+            if word in obj:
+                log.info(f"{word} exists in {ss_type} dict")
                 exists = True
                 break
         return exists
 
-    def _word_exists_in_exceptions(self, word: str) -> bool:
-        '''Checks if the word exists in the exceptions.
-        args:
-        - word: string
-        returns:
-        - bool
-        '''
-        return word in self._exc
-
-
     def _lemmatize(self, word: str) -> List[Tuple[str, str]]:
-        '''Lemmatizes the word using a morphological ruleset.
+        """Lemmatizes the word using a morphological ruleset.
         args:
         - word: string
         returns:
         - list of tuples containing the base word and tense id
-        '''
+        """
         log.info(f"Lemmatizing {word}")
         potential_base_words = []
         for ss_type, _, pattern, replacement in self.morph_ruleset:
@@ -220,4 +219,3 @@ class WordNetHandler:
             potential_base_words.append((re.sub(pattern, replacement, word), ss_type))
             log.info(f"Matched {pattern} with {word}")
         return potential_base_words
-

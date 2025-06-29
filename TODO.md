@@ -1,5 +1,8 @@
 # Lexical
 
+## Current Status
+- "ran" is not showing any defs
+
 ## Problem Statement
 As a user I should be able to get the definition of a word by command line or lsp by 'hovering' over its name.
 
@@ -33,18 +36,19 @@ as a server using stdio.
 - Networking
     - TCP
     - websocket
+        - async for websocket?
 - Verbosity (too many definitions and examples)
+- sattelite adjective support
 
-## wordnet protocol
+## wordnet response protocol
 response to one word = {
     "word": "word",
     "synset_count": 1, # number of words
-    "type_count": "number of types",
     "body": {
         "n": [
             {
-                "base": base_word,
-                "base_type": "n",
+                "base":? base_word,
+                "base_type":? "n",
                 "content": [
                     {
                         "definition": "a meaning of a word",
