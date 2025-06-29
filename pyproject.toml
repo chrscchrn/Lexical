@@ -1,9 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "Lexical"
 version = "1.0.0"
 description = "A dictionary server"
+authors = [
+    { name = "Chris Cochran", email = "cochranschris@gmail.com" },
+]
+readme = "README.md"
 dependencies = []
 requires-python = ">= 3.13"
 
 [project.scripts]
 lexical = "lexical.main:main"
+
+[tool.setuptools]
+include-package-data = true
