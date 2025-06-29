@@ -168,11 +168,26 @@ class WordNetHandler:
         returns:
         - list of tuples containing the base word and definition
         '''
-        base_words_and_tid = self._get_base_words_and_tid(word)
-        synsets_bw_pos_and_tid = self._get_synsets_pos_and_tid(base_words_and_tid)
-        if len(synsets_bw_pos_and_tid) == 0:
+        try:
+            base_words_and_tid = self._get_base_words_and_tid(word)
+            log.info(f"\nBase words and tense id: {base_words_and_tid}\n")
+        except Exception as e:
+            log.exception(f"Failed to get base words and tense id: {e}")
             return []
-        defs_bw_pos_tid = self._get_defs_bw_pos_tid(synsets_bw_pos_and_tid)
+
+        try:
+            synsets_bw_pos_and_tid = self._get_synsets_pos_and_tid(base_words_and_tid)
+            log.info(f"\nSynsets, base words, pos, and tense id: {synsets_bw_pos_and_tid}\n")
+        except Exception as e:
+            log.exception(f"Failed to get synsets: {e}")
+            return []
+
+        try:
+            defs_bw_pos_tid = self._get_defs_bw_pos_tid(synsets_bw_pos_and_tid)
+        except Exception as e:
+            log.exception(f"Failed to get definitions: {e}")
+            return []
+
         return defs_bw_pos_tid
 
     def _get_defs_bw_pos_tid(self, synsets_bw_pos_tid: List[Tuple[str, str, str, Any]]) -> List[Tuple[str, str, str, Any]]:
@@ -183,9 +198,13 @@ class WordNetHandler:
         - list of tuples containing the definition, base word, pos, and tense id
         '''
         defs = []
-        for synset, base_word, pos, tid in synsets_bw_pos_tid:
-            definition = self._data[pos][synset]
-            defs.append((definition, base_word, pos, tid))
+        try:
+            for synset, base_word, pos, tid in synsets_bw_pos_tid:
+                definition = self._data[pos][synset]
+                defs.append((definition, base_word, pos, tid))
+        except Exception as e:
+            log.exception(f"Failed to get definitions: {e}")
+            return []
         return defs
 
     def _get_base_words_and_tid(self, word: str) -> List[Tuple[str, str]] | List[Tuple[str, None]]:
@@ -203,7 +222,7 @@ class WordNetHandler:
         else:
             base_words = [(word, None)]
         return base_words
-
+    
     def _get_synsets_pos_and_tid(self, base_words_and_tid: List[Tuple[str, str]] | List[Tuple[str, None]]) -> List[Tuple[str, str, str, Any]]:
         '''Returns a list of tuples containing the synset, pos, and tense id.
         args:

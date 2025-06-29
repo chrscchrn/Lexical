@@ -35,3 +35,11 @@ as a server using stdio.
     - websocket
 - Verbosity (too many definitions and examples)
 
+## words
+### working
+- nouns are working
+- adverbs are working
+
+### not working
+- verbs are not working
+- adjectives are not working
