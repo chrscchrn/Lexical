@@ -81,6 +81,7 @@ class WordNetHandler:
                         if line == "":
                             break
                         res = line.strip().split()
+                        # TODO: make work with windows
                         pos = path.split("/")[-1].split(".")[0]
                         self._exc[self._pos_to_ss_type[pos]][res[0]] = res[1:]
             except Exception as e:
@@ -100,6 +101,7 @@ class WordNetHandler:
                         elif line[:2] == "  ":
                             continue
                         res = line.strip().split()
+                        # TODO: make work with windows
                         pos = path.split("/")[-1].split(".")[-1]
                         syn_count = int(res[2])
                         data = res[len(res) - syn_count :]
@@ -123,6 +125,7 @@ class WordNetHandler:
                             continue
                         res_str = line.strip()
                         word = res_str.split()[0]
+                        # TODO: make work with windows
                         pos = path.split("/")[-1].split(".")[-1]
                         data = res_str.split("|")[1]
                         self._data[self._pos_to_ss_type[pos]][word] = data

@@ -86,9 +86,11 @@ class Server:
             except Exception as e:
                 self.write(f"An error occured when looking up {word}: {e}\n")
                 return
+
             if not response["synset_count"]:
                 self.write(f"No definition(s) found for {word}\n")
                 return
+
             try:
                 self.handle_response(response)
             except Exception as e:
@@ -103,6 +105,7 @@ class Server:
             word_class = self._ss_type_to_class[ss_type]
             if cur_word_class != word_class and len(type_obj):
                 msg += f"({word_class})\n"
+
             for content in type_obj:
                 defenition: str = content["definition"]
                 msg += f"{counter}. "
