@@ -1,4 +1,5 @@
 import logging
+import sys
 import os
 from typing import Any, List, Tuple
 from .wordnet.wordnet import WordNetHandler
@@ -17,6 +18,7 @@ class Server:
         self.stdout = stdout
         self.root_dir = root_dir
         self.wordnet_path = os.path.join(self.root_dir, "data")
+        self.startup_message = False
         self.wordnet = WordNetHandler(self.wordnet_path)
         self.speech_class = {
             "adj": "adjective",
@@ -32,9 +34,20 @@ class Server:
             'vpp': ("verb", "present tense / present participle"),
             'a': ("adjective", "comparative & superlative"),
         }
+        self._ss_type_to_class = {
+            'a': 'adjective',
+            'n': 'noun',
+            'v': 'verb',
+            'r': 'adverb',
+            's': 'adjective',
+        }
         
     def listen(self):
         while not self.stdin.closed:
+            if not self.stdout.closed and not self.startup_message:
+                self.write("Lexical\nversion 1.0\n")
+                self.startup_message = True
+            req_str = None
             try:
                 req_str = self.stdin.readline()
             except ValueError:
@@ -49,73 +62,41 @@ class Server:
                 continue
 
             try:
-                self.consumer(req_str.strip().decode('utf-8'))
+                self.consumer([req_str.strip().decode('utf-8')])
             except ValueError:
                 log.exception("Failed to read from stdin")
                 continue
         log.info("Shutting down")
     
-    def consumer(self, word: str):
-        log.info(f"Received {word}")
-        clean_words = ' '.join(word.strip().split())
-
-        for cw in clean_words.split(' '):
-            response = self.wordnet.lookup_v2(cw.lower())
-        
-            current_base_word = ""
-            log.info(response)
-            log.info(f"WORD: {word}")
+    def consumer(self, words: List[str]):
+        log.info(f"Received {words}")
+        for word in words:
+            response = self.wordnet.lookup_v2(word.lower())
+            if not response["synset_count"]:
+                self.write(f"No definition(s) found for word: {word}.\n")
+            cur_word_class = ""
+            msg = f"{self._header(word)}"
             counter = 0
-            current_base_word = ""
-            header_written = False
-            msg = '\nDefinition:\n'
-
-            for definition, base_word, pos, tid in response:
-                if not header_written:
-                    if tid is not None:
-                        morph = self._morph_explanations[tid]
-                        msg += self._header(word, morph)
-                    else:
-                        msg += self._header(word)
-                    header_written = True
-
-                if current_base_word != base_word:
-                    if tid is not None:
-                        morph = self._morph_explanations[tid]
-                        msg += f'{word} is the {morph[1]} of "{base_word}"\n{self.speech_class[pos]}\n'
-                    else:
-                        msg += f'{word} coming from the word "{base_word}"\n{self.speech_class[pos]}\n'
-                    current_base_word = base_word
-
-                msg += f'{counter}. '
-                msg += self._format_defenition_and_examples(definition)
-                counter += 1
-            self.write(msg.encode('utf-8'))
+            for ss_type, type_obj in response["body"].items():
+                word_class = self._ss_type_to_class[ss_type]
+                if cur_word_class != word_class and len(type_obj):
+                    msg += f"({word_class})\n"
+                for content in type_obj:
+                    defenition: str = content["definition"]
+                    msg += f"{counter}. {defenition[0].capitalize()}{defenition[1:]}\n"
+                    for ex in content['examples']:
+                        msg += f'  - {ex}\n'
+                    counter += 1
+            msg += "----------------------------\n"
+            self.write(msg)
 
 
-    def _format_defenition_and_examples(self, body: str):
-        parts = body.split(";")
-        msg = f"{parts[0].strip()}\n"
-        for i in range(1, len(parts)):
-            msg += f'- {parts[i].strip()}\n'
-        return msg
-
-    def _header(self, word: str, morph: Any = None):
-        msg = f"{word[0].capitalize()}{word[1:]}\n"
-        if morph is not None:
-            msg += f'{morph[0]}\n'
-        return msg
+    def _header(self, word: str):
+        return f"----------------------------\n\n{word[0].capitalize()}{word[1:]}\n"
         
 
-    def _new_base_word(self, base_word: str, pos: str, tid: str):
-        msg = f"{base_word}\n"
-        return msg
-
-    # def _get_speech_class(self, tense = None):
-    #     return self.speech_class[pos]
-
-        
     def write(self, data):
+        data = data.encode('utf-8')
         self.stdout.write(data)
         self.stdout.flush()
 

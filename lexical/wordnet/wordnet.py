@@ -49,7 +49,7 @@ class WordNetHandler:
             'adj_s': 's',
         }
 
-        self._morph_ruleset = [
+        self.morph_ruleset = [
             ('n', 'regular plurals', r'(.+?)ies$', r'\1y'),               # babies → baby, flies → fly
             ('n', 'regular plurals', r'(.+?)([sxz]|[cs]h)es$', r'\1\2'),  # boxes → box, wishes → wish
             ('n', 'regular plurals', r'(.+?)s$', r'\1'),                  # cats → cat
@@ -65,6 +65,7 @@ class WordNetHandler:
             ('a', 'comparative & superlative', r'(.+?)iest$', r'\1y'),    # happiest → happy
             ('a', 'comparative & superlative', r'(.+?)er$', r'\1'),       # bigger → big
             ('a', 'comparative & superlative', r'(.+?)est$', r'\1'),      # biggest → big
+            # happier? TODO: need to expand to a complete ruleset
         ]
 
         # Load wordnet database
@@ -96,9 +97,10 @@ class WordNetHandler:
                         continue
                     res = line.strip().split()
                     pos = path.split("/")[-1].split(".")[-1]
-                    self._index[self._pos_to_ss_type[pos]][res[0]] = res[8:]
+                    syn_count = int(res[2])
+                    self._index[self._pos_to_ss_type[pos]][res[0]] = res[len(res)-syn_count:]
 
-        # data[class][synset] = definition
+        # data[class][synset] = definition and examples
         data_files = ["data.adj", "data.adv", "data.noun", "data.verb"]
         path_data = [os.path.join(self.wordnet_path, f) for f in data_files]
         for path in path_data:
@@ -111,33 +113,33 @@ class WordNetHandler:
                     elif line[:2] == "  ":
                         continue
                     res_str = line.strip()
+                    word = res_str.split()[0]
                     pos = path.split("/")[-1].split(".")[-1]
-                    self._data[self._pos_to_ss_type[pos]][res_str[0]] = res_str.split("|")[1]
+                    self._data[self._pos_to_ss_type[pos]][word] = res_str.split("|")[1]
 
     def lookup_v2(self, word: str):
-        '''Queries the wordnet for the definition of the word.
+        '''Lookup a word in wordnet and return a response with the word class, definitions and examples.
         args:
         - word: string
         returns:
-        - list of tuples containing the base word and definition
+        - dict
         '''
         response = {
             "word": word,
             "synset_count": 0,
-            "content": [
-                '''
-                {
-                    type: "s",
-                    base: "base word",
-                    base_type: "n",
-                    content: [{ definitions: "", examples: [""] }]
-                }
-                '''
-            ]
+            "body": {
+                'n': [],
+                'a': [],
+                'r': [],
+                'v': [],
+                's': [],
+            }
         }
 
-        base_words_and_types = []
+        # Getting base words then synsets
+        synsets_and_ss_types: List[Tuple[str, str]] = []
         if not self._word_exists_in_index(word):
+            base_words_and_types: List[Tuple[str, str]] = []
             if not self._word_exists_in_exceptions(word):
                 base_words_and_types.extend(self._lemmatize(word))
             else:
@@ -146,65 +148,37 @@ class WordNetHandler:
                         continue
                     for base_word in obj[word]:
                         base_words_and_types.append((base_word, ss_type))
+            log.info(f"Base Words and SS Types: {base_words_and_types}")
             # go on looking for the synsets
-        else:
-            pass
-            # here we will get the ss type from the index
-
-
-
-        base_words_and_tid = self._get_base_words_and_tid(word)
-        synsets_bw_pos_and_tid = self._get_synsets_pos_and_tid(base_words_and_tid)
-        if len(synsets_bw_pos_and_tid) == 0:
-            return []
-        defs_bw_pos_tid = self._get_defs_bw_pos_tid(synsets_bw_pos_and_tid)
-        return defs_bw_pos_tid
-
-    def _get_defs_bw_pos_tid(self, synsets_bw_pos_tid: List[Tuple[str, str, str, Any]]) -> List[Tuple[str, str, str, Any]]:
-        '''Returns a list of tuples containing the definition, base word, pos, and tense id.
-        args:
-        - synsets_bw_pos_tid: list of tuples containing the synset, base word, pos, and tense id
-        returns:
-        - list of tuples containing the definition, base word, pos, and tense id
-        '''
-        defs = []
-        for synset, base_word, pos, tid in synsets_bw_pos_tid:
-            definition = self._data[pos][synset]
-            defs.append((definition, base_word, pos, tid))
-        return defs
-
-    def _get_base_words_and_tid(self, word: str) -> List[Tuple[str, str]] | List[Tuple[str, None]]:
-        '''Returns a list of tuples containing the base word and tense id.
-        args:
-        - word: string
-        returns:
-        - list of tuples containing the base word and tense id (or None)
-        '''
-        if not self._word_exists_in_index(word):
-            if not self._word_exists_in_exceptions(word):
-                base_words = self._lemmatize(word)
-            else:
-                base_words = [(bw, None) for bw in self._exc[word]]
-        else:
-            base_words = [(word, None)]
-        return base_words
-
-    def _get_synsets_pos_and_tid(self, base_words_and_tid: List[Tuple[str, str]] | List[Tuple[str, None]]) -> List[Tuple[str, str, str, Any]]:
-        '''Returns a list of tuples containing the synset, pos, and tense id.
-        args:
-        - base_words_and_tid: list of tuples containing the base word and tense id
-        returns:
-        - list of tuples containing the synset, base word, pos, and tense id
-        '''
-        syn_pos_tid = []
-        for base_word, tid in base_words_and_tid:
-            for _type, synset_dict in self._index.items():
-                if base_word not in synset_dict:
+            for base_word, ss_type in base_words_and_types:
+                if base_word not in self._index[ss_type]:
                     continue
-                for synset in synset_dict[base_word]:
-                    syn_pos_tid.append((synset, base_word, _type, tid))
-                break
-        return syn_pos_tid
+                for synset in self._index[ss_type][base_word]:
+                    synsets_and_ss_types.append((synset, ss_type))
+        else:
+            # here we will get the ss type from the index
+            for ss_type, class_obj in self._index.items():
+                if word not in class_obj:
+                    log.info(f"{word} not in index class_obj[{ss_type}]")
+                    continue
+                log.info(f"{word} in class_obj[{ss_type}]")
+                for synset in class_obj[word]:
+                    log.info(f"Synset: {synset} in index.{ss_type}")
+                    synsets_and_ss_types.append((synset, ss_type))
+
+        log.info(f"Synsets and SS Types: {synsets_and_ss_types}")
+
+        response["synset_count"] = len(synsets_and_ss_types)
+
+        for synset, ss_type in synsets_and_ss_types:
+            defs_and_egs = self._data[ss_type][synset].split(';')
+            data = {
+                "definition": defs_and_egs[0].strip(),
+                "examples": [defs_and_egs[i].strip() for i in range(1, len(defs_and_egs))],
+            }
+            response["body"][ss_type].append(data)
+        log.info(response)
+        return response
 
 
     def _word_exists_in_index(self, word: str) -> bool:
@@ -240,104 +214,10 @@ class WordNetHandler:
         '''
         log.info(f"Lemmatizing {word}")
         potential_base_words = []
-        for _id, pattern, replacement in self._morph_ruleset:
+        for ss_type, _, pattern, replacement in self.morph_ruleset:
             if not re.match(pattern, word):
                 continue
-            potential_base_words.append((re.sub(pattern, replacement, word), _id))
+            potential_base_words.append((re.sub(pattern, replacement, word), ss_type))
             log.info(f"Matched {pattern} with {word}")
         return potential_base_words
 
-    def _load_wordnet(self):
-        exc_files = ["adj.exc", "adv.exc", "noun.exc", "verb.exc"]
-        path_exc = [os.path.join(self.wordnet_path, f) for f in exc_files]
-
-        for path in path_exc:
-            with open(path, "r") as f:
-                log.info(f"Loading {path}")
-                while True:
-                    line = f.readline()
-                    if line == "":
-                        break
-                    res = line.strip().split()
-                    word = res[0]
-                    base_words = [res[i] for i in range(1, len(res))]
-                    self._exc[word] = [base_word for base_word in base_words]
-
-        index_files = ["index.adj", "index.adv", "index.noun", "index.verb"]
-        path_index = [os.path.join(self.wordnet_path, f) for f in index_files]
-
-        for path in path_index:
-            with open(path, "r") as f:
-                log.info(f"Loading {path}")
-                while True:
-                    line = f.readline()
-                    if line == "":
-                        break
-                    elif line[:2] == "  ":
-                        continue
-                    res = line.strip().split()
-                    word = res[0]
-                    pos = self._char_to_pos[res[1]]
-                    synset_cnt = int(res[2])
-                    synsets = res[len(res)-synset_cnt:]
-                    self._index[pos][word] = synsets
-
-        data_files = ["data.adj", "data.adv", "data.noun", "data.verb"]
-        path_data = [os.path.join(self.wordnet_path, f) for f in data_files]
-
-        for path in path_data:
-            with open(path, "r") as f:
-                log.info(f"Loading {path}")
-                while True:
-                    line = f.readline()
-                    if line == "":
-                        break
-                    elif line[:2] == "  ":
-                        continue
-                    res_str = line.strip()
-                    synset = res_str[:8]
-                    pos = self._char_to_pos[res_str.split()[2]]
-                    definition = res_str.split("|")[1]
-                    self._data[pos][synset] = definition
-
-    def lookup(self, word) -> List[tuple[str, str]]:
-        '''Queries the wordnet for the definition of the word.
-        args:
-        - word: string
-        returns:
-        - list of tuples containing the base word and definition
-        '''
-        log.info(f"Looking up {word}...")
-        # base word
-        if word in self._exc:
-            base_words = self._exc[word]
-            log.info(f"Found base word(s) {base_words}")
-        else:
-            # should clean using morphological rules
-            log.info("no base word(s) found")
-            base_words = [word]
-
-        # gettings synset(s)
-        synsets_and_pos = []
-        for base_word in base_words:
-            for _type, synset_dict in self._index.items():
-                if base_word not in synset_dict:
-                    continue
-                log.info(f"Found synset(s): {synset_dict[base_word]}")
-                synsets_and_pos.append((synset_dict[base_word], _type, base_word))
-                break
-
-        log.info(f"Synsets and pos: {synsets_and_pos}")
-        if len(synsets_and_pos) == 0:
-            log.info("No synset(s) found...")
-            return []
-
-        # getting definition(s)
-        definitions = []
-        for synsets, pos, base_word in synsets_and_pos:
-            for synset in synsets:
-                definition = self._data[pos][synset]
-                definitions.append((base_word, definition))
-
-        return definitions
-:w
