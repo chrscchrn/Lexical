@@ -15,7 +15,7 @@ i.e.
 """
 
 
-def start_io_server(stdin, stdout, root_dir, _):
+def start_io_server(stdin, stdout, root_dir, verbose):
     """Start the IO server
     Args:
         stdin (file): stdin
@@ -24,15 +24,16 @@ def start_io_server(stdin, stdout, root_dir, _):
     """
     log.info("starting io server")
     log.info(f"root dir: {root_dir}")
-    server = Server(stdin, stdout, root_dir)
+    server = Server(stdin, stdout, root_dir, verbose)
     server.listen()
 
 
 class Server:
-    def __init__(self, stdin, stdout, root_dir):
+    def __init__(self, stdin, stdout, root_dir, verbose):
         self.stdin = stdin
         self.stdout = stdout
         self.wordnet_path = os.path.join(root_dir, "data")
+        self.verbose = verbose
         self.startup_message = False
         self.wordnet = WordNetHandler(self.wordnet_path)
         # TODO: morph explanations --base-word, --tense, etc.
@@ -55,17 +56,16 @@ class Server:
         """Listen for requests from stdin and send responses to stdout"""
         while not self.stdin.closed:
             if not self.stdout.closed and not self.startup_message:
-                self.write(b"Lexical\nversion 1.0\n\n")
+                msg = f"Lexical\nversion 1.0\nverbose: {self.verbose}\n\n"
+                self.write(msg.encode("utf-8"))
                 self.startup_message = True
             byte_string = None
 
             try:
                 byte_string = self.stdin.readline().strip()
             except Exception as e:
-                if self.stdin.closed:
-                    log.info("Stdin closed, Shutting down")
-                    return
                 log.exception(f"Failed to read from stdin {e}")
+                continue
 
             if byte_string is None:
                 break
@@ -106,14 +106,21 @@ class Server:
         Returns:
             msg (str): formatted response
         """
+        if not self.verbose:
+            for ss_type in response["body"]:
+                response["body"][ss_type] = response["body"][ss_type][:2]
+                for i in range(len(response["body"][ss_type])):
+                    egs = response["body"][ss_type][i]["examples"][:1]
+                    response["body"][ss_type][i]["examples"] = egs
+
         cur_word_class = ""
         msg = ""
         counter = 1
-        for ss_type, type_obj in response["body"].items():
+        for ss_type, type_list in response["body"].items():
             word_class = self._ss_type_to_class[ss_type]
-            if cur_word_class != word_class and len(type_obj):
+            if cur_word_class != word_class and len(type_list):
                 msg += f"({word_class})\n"
-            for content in type_obj:
+            for content in type_list:
                 defenition: str = content["definition"]
                 msg += f"{counter}. "
                 msg += f"{defenition[0].capitalize()}"

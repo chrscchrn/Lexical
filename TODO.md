@@ -36,7 +36,6 @@ as a server using stdio.
 - Networking
     - TCP
     - websocket (async)
-- Verbosity (too many definitions and examples)
 - sattelite adjective support
 - synonyms, anyonyms, word proximity
     - request should have method string -> convert to function

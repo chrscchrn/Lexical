@@ -19,7 +19,7 @@ def add_arguments(parser) -> None:
     parser.add_argument(
         "-v",
         "--verbose",
-        action="store_false",
+        action="store_true",
         help="Enable verbose definitions and examples",
     )
     group = parser.add_mutually_exclusive_group()
