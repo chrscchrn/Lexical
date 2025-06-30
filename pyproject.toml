@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "Lexical"
-version = "1.0.0"
+version = "1.0"
 description = "A dictionary server"
 authors = [
     { name = "Chris Cochran", email = "cochranschris@gmail.com" },
