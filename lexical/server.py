@@ -1,6 +1,7 @@
-import logging
 import os
+import logging
 from typing import Dict, List
+
 from .wordnet.wordnet import WordNetHandler
 
 log = logging.getLogger(__name__)
@@ -21,6 +22,7 @@ def start_io_server(stdin, stdout, root_dir, verbose):
         stdin (file): stdin
         stdout (file): stdout
         root_dir (str): root directory
+        verbose (bool): verbose
     """
     log.info("starting io server")
     log.info(f"root dir: {root_dir}")
@@ -53,7 +55,7 @@ class Server:
         }
 
     def listen(self):
-        """Listen for requests from stdin and send responses to stdout"""
+        """Listens to stdin and writes to stdout"""
         while not self.stdin.closed:
             if not self.stdout.closed and not self.startup_message:
                 msg = f"Lexical\nversion 1.0\nverbose: {self.verbose}\n\n"
@@ -83,7 +85,7 @@ class Server:
         log.info("Shutting down")
 
     def handle_request(self, word: str) -> str:
-        """Receives a list of words and returns a response"""
+        """Handles a request from stdin and returns a formatted response"""
         log.info(f"Received {word}")
         try:
             response = self.wordnet.call(word.lower())
