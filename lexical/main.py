@@ -2,6 +2,7 @@ import sys
 import os
 import logging
 import argparse
+
 from .server import start_io_server
 
 logging.basicConfig(
@@ -19,12 +20,15 @@ def add_arguments(parser) -> None:
     parser.add_argument(
         "-v",
         "--verbose",
-        action="store_false",
+        action="store_true",
         help="Enable verbose definitions and examples",
     )
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
-        "--define", nargs="+", metavar="WORD", help="Define one or more words"
+        "--define",
+        nargs="+",
+        metavar="WORD",
+        help="Define one or more words",
     )
     group.add_argument(
         "--stdin",

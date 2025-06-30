@@ -1,6 +1,7 @@
-from lexical.wordnet import wordnet as W
-from pathlib import Path
 import os
+from pathlib import Path
+
+from lexical.wordnet import wordnet as W
 
 
 def find_project_root():
@@ -22,7 +23,7 @@ def test_response_protocol():
         assert ss_type in wordnet_handler._index
         assert ss_type in wordnet_handler._data
 
-    response = wordnet_handler.lookup_v2("cat")
+    response = wordnet_handler.call("cat")
     assert response["word"] == "cat"
     assert response["synset_count"] > 0
 

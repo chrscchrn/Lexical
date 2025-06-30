@@ -1,6 +1,7 @@
-import logging
 import os
-from typing import List
+import logging
+from typing import Dict, List
+
 from .wordnet.wordnet import WordNetHandler
 
 log = logging.getLogger(__name__)
@@ -15,18 +16,26 @@ i.e.
 """
 
 
-def start_io_server(stdin, stdout, root_dir, _):
+def start_io_server(stdin, stdout, root_dir, verbose):
+    """Start the IO server
+    Args:
+        stdin (file): stdin
+        stdout (file): stdout
+        root_dir (str): root directory
+        verbose (bool): verbose
+    """
     log.info("starting io server")
     log.info(f"root dir: {root_dir}")
-    server = Server(stdin, stdout, root_dir)
+    server = Server(stdin, stdout, root_dir, verbose)
     server.listen()
 
 
 class Server:
-    def __init__(self, stdin, stdout, root_dir):
+    def __init__(self, stdin, stdout, root_dir, verbose):
         self.stdin = stdin
         self.stdout = stdout
         self.wordnet_path = os.path.join(root_dir, "data")
+        self.verbose = verbose
         self.startup_message = False
         self.wordnet = WordNetHandler(self.wordnet_path)
         # TODO: morph explanations --base-word, --tense, etc.
@@ -46,61 +55,74 @@ class Server:
         }
 
     def listen(self):
+        """Listens to stdin and writes to stdout"""
         while not self.stdin.closed:
             if not self.stdout.closed and not self.startup_message:
-                self.write("Lexical\nversion 1.0\n\n")
+                msg = f"Lexical\nversion 1.0\nverbose: {self.verbose}\n\n"
+                self.write(msg.encode("utf-8"))
                 self.startup_message = True
-            req_str = None
+            byte_string = None
 
             try:
-                req_str = self.stdin.readline()
-            except ValueError:
-                if self.stdin.closed:
-                    return
-                log.exception("Failed to read from stdin")
+                byte_string = self.stdin.readline().strip()
+            except Exception as e:
+                log.exception(f"Failed to read from stdin {e}")
+                continue
 
-            if req_str is None:
+            if byte_string is None:
                 break
-            if len(req_str) == 0:
+
+            if len(byte_string) == 0:
                 continue
 
             try:
-                self.handle_request([req_str.strip().decode("utf-8")])
-            except ValueError:
-                log.exception("Failed to read from stdin")
+                request = byte_string.decode("utf-8")
+                response = self.handle_request(request)
+                self.write(response.encode("utf-8"))
+            except Exception as e:
+                log.exception(f"Failed to read from stdin: {e}")
                 continue
         log.info("Shutting down")
 
-    def handle_request(self, words: List[str]):
-        log.info(f"Received {words}")
+    def handle_request(self, word: str) -> str:
+        """Handles a request from stdin and returns a formatted response"""
+        log.info(f"Received {word}")
+        try:
+            response = self.wordnet.call(word.lower())
+        except Exception as e:
+            return f"An error occured while looking up {word}: {e}\n"
 
-        for word in words:
-            try:
-                response = self.wordnet.lookup_v2(word.lower())
-            except Exception as e:
-                self.write(f"An error occured when looking up {word}: {e}\n")
-                return
+        if not response["synset_count"]:
+            return f"No definition(s) found for {word}\n"
 
-            if not response["synset_count"]:
-                self.write(f"No definition(s) found for {word}\n")
-                return
+        try:
+            return self.format_response(response)
+        except Exception as e:
+            return f"Wordnet Response Protocol Error:\n{e}\n"
 
-            try:
-                self.handle_response(response)
-            except Exception as e:
-                self.write(f"Wordnet Response Protocol Error:\n{e}\n")
-                return
+    def format_response(self, response: Dict) -> str:
+        """Recieves a response in wordnet response
+        protocol, formats it, then returns it
+        Args:
+            response (dict): response from wordnet
+        Returns:
+            msg (str): formatted response
+        """
+        if not self.verbose:
+            for ss_type in response["body"]:
+                response["body"][ss_type] = response["body"][ss_type][:2]
+                for i in range(len(response["body"][ss_type])):
+                    egs = response["body"][ss_type][i]["examples"][:1]
+                    response["body"][ss_type][i]["examples"] = egs
 
-    def handle_response(self, response):
         cur_word_class = ""
         msg = ""
         counter = 1
-        for ss_type, type_obj in response["body"].items():
+        for ss_type, type_list in response["body"].items():
             word_class = self._ss_type_to_class[ss_type]
-            if cur_word_class != word_class and len(type_obj):
+            if cur_word_class != word_class and len(type_list):
                 msg += f"({word_class})\n"
-
-            for content in type_obj:
+            for content in type_list:
                 defenition: str = content["definition"]
                 msg += f"{counter}. "
                 msg += f"{defenition[0].capitalize()}"
@@ -108,12 +130,12 @@ class Server:
                 for ex in content["examples"]:
                     msg += f"  - {ex}\n"
                 counter += 1
-        self.write(msg)
+        return msg
 
-    def write(self, data):
-        data = data.encode("utf-8")
+    def write(self, data: bytes):
+        """Write bytes to stdout"""
         try:
             self.stdout.write(data)
             self.stdout.flush()
-        except ValueError:
-            log.exception("Failed to write to stdout")
+        except Exception as e:
+            log.exception(f"Failed to write to stdout: {e}")

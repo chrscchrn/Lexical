@@ -1,7 +1,7 @@
 import os
 import logging
 import re
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 log = logging.getLogger(__name__)
 
@@ -132,17 +132,12 @@ class WordNetHandler:
             except Exception as e:
                 log.error(f"Failed to load {path}: {e}")
 
-    def lookup_v2(self, word: str):
-        """Lookup a word in wordnet and return a response with the word class,
-            definitions and examples.
-        args:
-        - word: string
-        returns:
-        - dict
-        """
+    def call(self, word: str, method="definition") -> Dict:
+        log.info(f"Wordnet recieved word: {word}")
         response = {
             "word": word,
             "synset_count": 0,
+            "method": method,
             "body": {
                 "n": [],
                 "a": [],
@@ -150,10 +145,30 @@ class WordNetHandler:
                 "v": [],
                 "s": [],
             },
+            "msg": None,
         }
+        synsets_and_ss_types = self._get_synsets_and_ss_types_from_word(word)
 
-        log.info(f"Wordnet recieved word: {word}")
+        log.info(f"Synsets and SS Types: {synsets_and_ss_types}")
+        response["synset_count"] = len(synsets_and_ss_types)
 
+        match method:
+            case "definition":
+                for synset, ss_type in synsets_and_ss_types:
+                    defs_and_egs = self._data[ss_type][synset].split(";")
+                    examples = []
+                    for i in range(1, len(defs_and_egs)):
+                        examples.append(defs_and_egs[i].strip())
+                    data = {
+                        "definition": defs_and_egs[0].strip(),
+                        "examples": examples,
+                    }
+                    response["body"][ss_type].append(data)
+            case "thesaurus":
+                response["msg"] = "Thesaurus method not supported yet"
+        return response
+
+    def _get_synsets_and_ss_types_from_word(self, word: str):
         # Getting base words then synsets
         synsets_and_ss_types: List[Tuple[str, str]] = []
         if not self._word_exists_in(word, self._index):
@@ -185,21 +200,7 @@ class WordNetHandler:
                     log.info(f"Synset: {synset} in index.{ss_type}")
                     synsets_and_ss_types.append((synset, ss_type))
 
-        log.info(f"Synsets and SS Types: {synsets_and_ss_types}")
-        response["synset_count"] = len(synsets_and_ss_types)
-
-        for synset, ss_type in synsets_and_ss_types:
-            defs_and_egs = self._data[ss_type][synset].split(";")
-            examples = []
-            for i in range(1, len(defs_and_egs)):
-                examples.append(defs_and_egs[i].strip())
-            data = {
-                "definition": defs_and_egs[0].strip(),
-                "examples": examples,
-            }
-            response["body"][ss_type].append(data)
-        log.info(f"End lookup_v2, response: {response}")
-        return response
+        return synsets_and_ss_types
 
     def _word_exists_in(self, word: str, data: dict) -> bool:
         """Checks if the word exists in the exceptions.
