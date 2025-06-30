@@ -1,4 +1,4 @@
-/lexical/_version/py
+/lexical/_version.py
 devbuild.*
 # Byte-compiled / optimized / DLL files
 __pycache__/
