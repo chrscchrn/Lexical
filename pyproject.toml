@@ -13,6 +13,11 @@ readme = "README.md"
 dependencies = []
 requires-python = ">= 3.13"
 
+[project.optional-dependencies]
+test = [
+    "pytest",
+]
+
 [project.scripts]
 lexical = "lexical.main:main"
 
