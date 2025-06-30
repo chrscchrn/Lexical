@@ -215,7 +215,7 @@ class WordNetHandler:
                 "a": [],
                 "r": [],
                 "v": [],
-                "s": [],  # TODO: is s used?
+                "s": [],
             },
         }
 

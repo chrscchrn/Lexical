@@ -28,17 +28,6 @@ def start_io_server(stdin, stdout, root_dir, _):
     server.listen()
 
 
-def run_arguements(words, verbosity):
-    """Search the wordnet for words from the command line
-    Args:
-        words (list): list of words to search
-        verbosity (int): verbosity
-    """
-    log.info("running arguements")
-    log.info(f"words: {words}")
-    log.info(f"verbosity: {verbosity}")
-
-
 class Server:
     def __init__(self, stdin, stdout, root_dir):
         self.stdin = stdin

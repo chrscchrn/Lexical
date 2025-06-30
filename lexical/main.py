@@ -2,7 +2,7 @@ import sys
 import os
 import logging
 import argparse
-from .server import start_io_server, run_arguements
+from .server import start_io_server
 
 logging.basicConfig(
     filename="log.log",
@@ -62,8 +62,7 @@ def main() -> None:
         stdin, stdout = _binary_stdio()
         start_io_server(stdin, stdout, ROOT_DIR, args.verbose)
     elif args.define:
-        # TODO:
-        run_arguements(args.define, args.verbose)
+        print("CLI not available")
     else:
         parser.print_help()
 
