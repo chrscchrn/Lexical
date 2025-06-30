@@ -22,12 +22,6 @@ def start_io_server(stdin, stdout, root_dir, _):
     server.listen()
 
 
-def run_arguements(words, verbosity):
-    log.info("running arguements")
-    log.info(f"words: {words}")
-    log.info(f"verbosity: {verbosity}")
-
-
 class Server:
     def __init__(self, stdin, stdout, root_dir):
         self.stdin = stdin

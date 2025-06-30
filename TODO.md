@@ -29,14 +29,13 @@ as a server using stdio.
 - Create a VS Code extension that installs and runs lexical via lua without LSP
 
 ## Future Plans
+- command line
+    - open file -> binary search or map -> get synsets -> binary search or map -> get definitions
 - restructure the wordnet data to embedded DB
     - SQLite, DuckDB, RocksDB
-- floating window for multiple definitions
-    - telescope.nvim
 - Networking
     - TCP
-    - websocket
-        - async for websocket?
+    - websocket (async)
 - Verbosity (too many definitions and examples)
 - sattelite adjective support
 
