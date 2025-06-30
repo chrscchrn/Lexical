@@ -1,6 +1,7 @@
 import os
+import sys
 import logging
-from typing import Dict, List
+from typing import Dict
 
 from .wordnet.wordnet import WordNetHandler
 
@@ -65,6 +66,9 @@ class Server:
 
             try:
                 byte_string = self.stdin.readline().strip()
+            except KeyboardInterrupt:
+                self.write(b"\n")
+                sys.exit(0)
             except Exception as e:
                 log.exception(f"Failed to read from stdin {e}")
                 continue
