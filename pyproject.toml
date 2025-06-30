@@ -26,4 +26,4 @@ include-package-data = true
 
 [tool.setuptools_scm]
 write_to = "lexical/_version.py"
-write_to_template = '__version__ = "{version}"\n'
+write_to_template = "__version__ = \"{version}\"\n"
