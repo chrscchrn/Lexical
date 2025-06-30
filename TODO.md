@@ -39,10 +39,13 @@ as a server using stdio.
         - async for websocket?
 - Verbosity (too many definitions and examples)
 - sattelite adjective support
+- synonyms, anyonyms, word proximity
+    - request should have method string -> convert to function
 
 ## wordnet response protocol
 response to one word = {
     "word": "word",
+    "method": "method"
     "synset_count": 1, # number of words
     "body": {
         "n": [
@@ -57,14 +60,12 @@ response to one word = {
                 ]
             },
         ],
-        "verb": [...]
+        "v": [...]
     },
 }
 
-go thru the indexes and save like this:
-indexes = {
-    "n": [],
-    "v": [],
-    "a": [],
-    "r": [],
-}
+synonyms:
+n: ["word1", "word2", ...],
+v: ["word1", "word2", ...],
+r: ["word1", "word2", ...],
+a: ["word1", "word2", ...],

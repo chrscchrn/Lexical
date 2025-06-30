@@ -24,7 +24,22 @@ def add_arguments(parser) -> None:
     )
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
-        "--define", nargs="+", metavar="WORD", help="Define one or more words"
+        "--define",
+        nargs="+",
+        metavar="WORD",
+        help="Define one or more words",
+    )
+    group.add_argument(
+        "--syn",
+        nargs="+",
+        metavar="WORD",
+        help="Get synonyms of words",
+    )
+    group.add_argument(
+        "--ant",
+        nargs="+",
+        metavar="WORD",
+        help="Get anyonyms of words",
     )
     group.add_argument(
         "--stdin",

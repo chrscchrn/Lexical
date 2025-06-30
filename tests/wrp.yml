@@ -1,0 +1,9 @@
+# wordnet response protocol
+response:
+    - word: string
+    - synset_count: int
+    - body: 
+        - n: 
+        - a: 
+        - r: 
+        - v: 
