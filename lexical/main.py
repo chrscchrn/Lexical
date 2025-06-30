@@ -24,12 +24,12 @@ def add_arguments(parser) -> None:
         help="Enable verbose definitions and examples",
     )
     group = parser.add_mutually_exclusive_group()
-    group.add_argument(
-        "--define",
-        nargs="+",
-        metavar="WORD",
-        help="Define one or more words",
-    )
+    # group.add_argument(
+    #     "--define",
+    #     nargs="+",
+    #     metavar="WORD",
+    #     help="Define one or more words",
+    # )
     group.add_argument(
         "--stdin",
         action="store_true",

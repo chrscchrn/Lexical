@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=69.0.0", "setuptools_scm[toml]>=3.4.3", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -23,3 +23,7 @@ lexical = "lexical.main:main"
 
 [tool.setuptools]
 include-package-data = true
+
+[tool.setuptools_scm]
+write_to = "lexical/_version.py"
+write_to_template = '__version__ = "{version}"\n'

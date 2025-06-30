@@ -4,6 +4,7 @@ import logging
 from typing import Dict
 
 from .wordnet.wordnet import WordNetHandler
+from ._version import __version__
 
 log = logging.getLogger(__name__)
 
@@ -59,7 +60,9 @@ class Server:
         """Listens to stdin and writes to stdout"""
         while not self.stdin.closed:
             if not self.stdout.closed and not self.startup_message:
-                msg = f"Lexical\nversion 1.0\nverbose: {self.verbose}\n\n"
+                msg = "Lexical\n"
+                msg += f"version {__version__}\n"
+                msg += f"verbose: {self.verbose}\n\n"
                 self.write(msg.encode("utf-8"))
                 self.startup_message = True
             byte_string = None
