@@ -145,23 +145,27 @@ class WordNetHandler:
                 "v": [],
                 "s": [],  # TODO: is s used?
             },
+            "msg": None,
         }
         synsets_and_ss_types = self._get_synsets_and_ss_types_from_word(word)
 
         log.info(f"Synsets and SS Types: {synsets_and_ss_types}")
         response["synset_count"] = len(synsets_and_ss_types)
 
-        for synset, ss_type in synsets_and_ss_types:
-            defs_and_egs = self._data[ss_type][synset].split(";")
-            examples = []
-            for i in range(1, len(defs_and_egs)):
-                examples.append(defs_and_egs[i].strip())
-            data = {
-                "definition": defs_and_egs[0].strip(),
-                "examples": examples,
-            }
-            response["body"][ss_type].append(data)
-        log.info(f"End lookup_v2, response: {response}")
+        match method:
+            case "definition":
+                for synset, ss_type in synsets_and_ss_types:
+                    defs_and_egs = self._data[ss_type][synset].split(";")
+                    examples = []
+                    for i in range(1, len(defs_and_egs)):
+                        examples.append(defs_and_egs[i].strip())
+                    data = {
+                        "definition": defs_and_egs[0].strip(),
+                        "examples": examples,
+                    }
+                    response["body"][ss_type].append(data)
+            case "thesaurus":
+                response["msg"] = "Thesaurus method not supported yet"
         return response
 
     def _get_synsets_and_ss_types_from_word(self, word: str):
@@ -197,76 +201,6 @@ class WordNetHandler:
                     synsets_and_ss_types.append((synset, ss_type))
 
         return synsets_and_ss_types
-
-    def lookup_v2(self, word: str, method="definition"):
-        """Lookup a word in wordnet and return a response with the word class,
-            definitions and examples.
-        args:
-        - word: string
-        returns:
-        - dict
-        """
-        response = {
-            "word": word,
-            "synset_count": 0,
-            "method": method,
-            "body": {
-                "n": [],
-                "a": [],
-                "r": [],
-                "v": [],
-                "s": [],
-            },
-        }
-
-        log.info(f"Wordnet recieved word: {word}")
-
-        # Getting base words then synsets
-        synsets_and_ss_types: List[Tuple[str, str]] = []
-        if not self._word_exists_in(word, self._index):
-            base_words_and_types: List[Tuple[str, str]] = []
-            if not self._word_exists_in(word, self._exc):
-                base_words_and_types.extend(self._lemmatize(word))
-            else:
-                for ss_type, obj in self._exc.items():
-                    if word not in obj:
-                        continue
-                    for base_word in obj[word]:
-                        base_words_and_types.append((base_word, ss_type))
-            log.info(f"Base Words and SS Types: {base_words_and_types}")
-
-            # go on looking for the synsets
-            for base_word, ss_type in base_words_and_types:
-                if base_word not in self._index[ss_type]:
-                    continue
-                for synset in self._index[ss_type][base_word]:
-                    synsets_and_ss_types.append((synset, ss_type))
-        else:
-            # here we will get the ss type from the index
-            for ss_type, class_obj in self._index.items():
-                if word not in class_obj:
-                    log.info(f"{word} not in index class_obj[{ss_type}]")
-                    continue
-                log.info(f"{word} in class_obj[{ss_type}]")
-                for synset in class_obj[word]:
-                    log.info(f"Synset: {synset} in index.{ss_type}")
-                    synsets_and_ss_types.append((synset, ss_type))
-
-        log.info(f"Synsets and SS Types: {synsets_and_ss_types}")
-        response["synset_count"] = len(synsets_and_ss_types)
-
-        for synset, ss_type in synsets_and_ss_types:
-            defs_and_egs = self._data[ss_type][synset].split(";")
-            examples = []
-            for i in range(1, len(defs_and_egs)):
-                examples.append(defs_and_egs[i].strip())
-            data = {
-                "definition": defs_and_egs[0].strip(),
-                "examples": examples,
-            }
-            response["body"][ss_type].append(data)
-        log.info(f"End lookup_v2, response: {response}")
-        return response
 
     def _word_exists_in(self, word: str, data: dict) -> bool:
         """Checks if the word exists in the exceptions.

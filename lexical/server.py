@@ -60,7 +60,7 @@ class Server:
             byte_string = None
 
             try:
-                byte_string = self.stdin.readline()
+                byte_string = self.stdin.readline().strip()
             except Exception as e:
                 if self.stdin.closed:
                     log.info("Stdin closed, Shutting down")
@@ -69,11 +69,12 @@ class Server:
 
             if byte_string is None:
                 break
+
             if len(byte_string) == 0:
                 continue
 
             try:
-                request = [byte_string.strip().decode("utf-8")]
+                request = byte_string.decode("utf-8")
                 response = self.handle_request(request)
                 self.write(response.encode("utf-8"))
             except Exception as e:
@@ -81,32 +82,25 @@ class Server:
                 continue
         log.info("Shutting down")
 
-    def handle_request(self, words: List[str]) -> str:
+    def handle_request(self, word: str) -> str:
         """Receives a list of words and returns a response"""
-        log.info(f"Received {words}")
-        for word in words:
-            try:
-                response = self.wordnet.call(word.lower())
-            except Exception as e:
-                self.write(
-                    f"An error occured while looking up {word}: {e}\n".encode("utf-8")
-                )
-                return ""
+        log.info(f"Received {word}")
+        try:
+            response = self.wordnet.call(word.lower())
+        except Exception as e:
+            return f"An error occured while looking up {word}: {e}\n"
 
-            if not response["synset_count"]:
-                self.write(f"No definition(s) found for {word}\n".encode("utf-8"))
-                return ""
+        if not response["synset_count"]:
+            return f"No definition(s) found for {word}\n"
 
-            try:
-                return self.format_response(response)
-            except Exception as e:
-                return f"Wordnet Response Protocol Error:\n{e}\n"
-
-        return ""
+        try:
+            return self.format_response(response)
+        except Exception as e:
+            return f"Wordnet Response Protocol Error:\n{e}\n"
 
     def format_response(self, response: Dict) -> str:
         """Recieves a response in wordnet response
-        protocol (TODO.md), formats it, then returns it
+        protocol, formats it, then returns it
         Args:
             response (dict): response from wordnet
         Returns:

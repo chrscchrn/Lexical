@@ -30,18 +30,6 @@ def add_arguments(parser) -> None:
         help="Define one or more words",
     )
     group.add_argument(
-        "--syn",
-        nargs="+",
-        metavar="WORD",
-        help="Get synonyms of words",
-    )
-    group.add_argument(
-        "--ant",
-        nargs="+",
-        metavar="WORD",
-        help="Get anyonyms of words",
-    )
-    group.add_argument(
         "--stdin",
         action="store_true",
         help="Run as an IO server",
