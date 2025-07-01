@@ -1,10 +1,9 @@
-# Lexical 
+# Lexical
 
-Lexical is an offline dictionary server and command-line tool that provides fast word definitions using WordNet data.
+Lexical is an offline dictionary server that provides fast word definitions using WordNet data.
 
 ## Features
 - **Offline Dictionary**: Uses local WordNet data for word lookups.
-- **Command Line Tool**: Query word definitions directly from your terminal.
 - **LSP/Editor Integration**: Can run as a server over stdio for editor integration
 
 ## Installation
@@ -28,8 +27,20 @@ Run as a background server using stdin/stdout:
 ```bash
 lexical --stdin
 ```
-### Command Line (in progress)
-Look up definitions for one or more words:
-```bash
-lexical word1 word2 word3
+Request:
+```
+run
+```
+Response:
+```
+(noun)
+1. A score in baseball made by a runner touching all four bases safely
+  - "the Yankees scored 3 runs in the bottom of the 9th"
+2. The act of testing something
+  - "in the experimental trials the amount of carbon was measured separately"
+(verb)
+3. Move fast by using one's feet, with one foot off the ground at any given time
+  - "Don't run--you'll be out of breath"
+4. Flee
+  - take to one's heels
 ```
