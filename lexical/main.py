@@ -4,6 +4,7 @@ import logging
 import argparse
 
 from .server import start_io_server
+from ._version import __version__
 
 logging.basicConfig(
     filename="log.log",
@@ -22,6 +23,9 @@ def add_arguments(parser) -> None:
         "--verbose",
         action="store_true",
         help="Enable verbose definitions and examples",
+    )
+    parser.add_argument(
+        "-V", "--version", action="version", version=f"%(prog)s {__version__}"
     )
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
