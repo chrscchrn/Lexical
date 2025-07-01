@@ -12,14 +12,9 @@ Lexical is an offline dictionary server that provides fast word definitions usin
 
 ### Install
 **Install the project with pip**
-   - For development:
-     ```bash
-     pip install -e .
-     ```
-   - For regular use:
-     ```bash
-     pip install .
-     ```
+ ```bash
+ pip install lexical-server
+ ```
 
 ## Usage
 ### As a Dictionary Server (for LSP/editor integration)
