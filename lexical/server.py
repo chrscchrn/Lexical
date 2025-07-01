@@ -5,7 +5,7 @@ from typing import Dict
 
 from .wordnet.wordnet import WordNetHandler
 
-# from ._version import __version__
+from ._version import __version__
 
 log = logging.getLogger(__name__)
 
@@ -62,7 +62,7 @@ class Server:
         while not self.stdin.closed:
             if not self.stdout.closed and not self.startup_message:
                 msg = "Lexical\n"
-                msg += "version 1.0.0\n"
+                msg += f"version {__version__}\n"
                 msg += f"verbose: {self.verbose}\n\n"
                 self.write(msg.encode("utf-8"))
                 self.startup_message = True
