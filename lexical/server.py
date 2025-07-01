@@ -62,7 +62,7 @@ class Server:
         while not self.stdin.closed:
             if not self.stdout.closed and not self.startup_message:
                 msg = "Lexical\n"
-                msg += "version 0.1.1\n"
+                msg += "version 1.0.0\n"
                 msg += f"verbose: {self.verbose}\n\n"
                 self.write(msg.encode("utf-8"))
                 self.startup_message = True
