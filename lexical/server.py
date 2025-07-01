@@ -40,7 +40,7 @@ class Server:
         self.verbose = verbose
         self.startup_message = False
         self.wordnet = WordNetHandler(self.wordnet_path)
-        # TODO: morph explanations --base-word, --tense, etc.
+        # TODO: morph explanations
         self._morph_explanations = {
             "n": ("noun", "regular plural"),
             "vtp": ("verb", "third person singular present"),

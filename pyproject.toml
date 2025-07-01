@@ -4,7 +4,6 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "Lexical"
-version = "1.0"
 description = "A dictionary server"
 authors = [
     { name = "Chris Cochran", email = "cochranschris@gmail.com" },
@@ -12,6 +11,7 @@ authors = [
 readme = "README.md"
 dependencies = []
 requires-python = ">= 3.13"
+dynamic = ["version"]
 
 [project.optional-dependencies]
 test = [

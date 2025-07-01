@@ -24,12 +24,6 @@ def add_arguments(parser) -> None:
         help="Enable verbose definitions and examples",
     )
     group = parser.add_mutually_exclusive_group()
-    # group.add_argument(
-    #     "--define",
-    #     nargs="+",
-    #     metavar="WORD",
-    #     help="Define one or more words",
-    # )
     group.add_argument(
         "--stdin",
         action="store_true",
@@ -50,8 +44,6 @@ def main() -> None:
     if args.stdin:
         stdin, stdout = _binary_stdio()
         start_io_server(stdin, stdout, ROOT_DIR, args.verbose)
-    elif args.define:
-        print("CLI not available")
     else:
         parser.print_help()
 
