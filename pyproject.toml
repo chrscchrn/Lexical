@@ -3,15 +3,16 @@ requires = ["setuptools>=69.0.0", "setuptools_scm[toml]>=3.4.3", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "Lexical"
+name = "Lexical-Server"
 description = "A dictionary server"
+version = "0.1.0"
 authors = [
     { name = "Chris Cochran", email = "cochranschris@gmail.com" },
 ]
 readme = "README.md"
 dependencies = []
 requires-python = ">= 3.13"
-dynamic = ["version"]
+# dynamic = ["version"]
 
 [project.optional-dependencies]
 test = [
@@ -24,6 +25,6 @@ lexical = "lexical.main:main"
 [tool.setuptools]
 include-package-data = true
 
-[tool.setuptools_scm]
-write_to = "lexical/_version.py"
-write_to_template = "__version__ = \"{version}\"\n"
+# [tool.setuptools_scm]
+# write_to = "lexical/_version.py"
+# write_to_template = "__version__ = \"{version}\"\n"
