@@ -11,7 +11,6 @@ Lexical is an offline dictionary server that provides fast word definitions usin
 - Python 3.13+
 
 ### Install
-**Install the project with pip**
  ```bash
  pip install lexical-server
  ```
