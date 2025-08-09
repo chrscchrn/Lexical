@@ -1,11 +1,10 @@
+import logging
 import os
 import sys
-import logging
 from typing import Dict
 
-from .wordnet.wordnet import WordNetHandler
-
 from ._version import __version__
+from .wordnet.wordnet import WordNetHandler
 
 log = logging.getLogger(__name__)
 

@@ -1,10 +1,10 @@
-import sys
-import os
-import logging
 import argparse
+import logging
+import os
+import sys
 
-from .server import start_io_server
 from ._version import __version__
+from .server import start_io_server
 
 logging.basicConfig(
     filename="log.log",

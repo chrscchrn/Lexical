@@ -1,14 +1,11 @@
 # Lexical
 
-## Current Status
-- "ran" is not showing any defs
-
 ## Problem Statement
 As a user I should be able to get the definition of a word by command line or lsp by 'hovering' over its name.
 
 Command Line:
 ```
-lexical word1 word2 word3
+lexical word1
 ```
 > Use command line arguements to get the definition of a word.
 
@@ -29,6 +26,10 @@ as a server using stdio.
 - Create a VS Code extension that installs and runs lexical via lua without LSP
 
 ## Future Plans
+- Need support for phrases (drop multiple word defs)
+- support for acronyms (no periods, maybe when user uses caps?)
+    - names can use a combination of the two
+- should I expect users to use apostrophes?
 - command line
     - open file -> binary search or map -> get synsets -> binary search or map -> get definitions
 - restructure the wordnet data to embedded DB
